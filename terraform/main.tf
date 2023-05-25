@@ -13,7 +13,7 @@ resource "aws_subnet" "node_public_subnet1" {
   vpc_id                                      = aws_vpc.node-app_vpc.id
   cidr_block                                  = var.subnet_cidr_blocks[0]
   map_public_ip_on_launch                     = true
-  availability_zone                           = data.aws_availability_zones.available.names[0]
+  availability_zone                           = data.aws_availability_zones.node.names[0]
   enable_resource_name_dns_a_record_on_launch = true
 
   tags = {
@@ -25,7 +25,7 @@ resource "aws_subnet" "node_public_subnet2" {
   vpc_id                                      = aws_vpc.node-app_vpc.id
   cidr_block                                  = var.subnet_cidr_blocks[1]
   map_public_ip_on_launch                     = true
-  availability_zone                           = data.aws_availability_zones.available.names[1]
+  availability_zone                           = data.aws_availability_zones.node.names[1]
   enable_resource_name_dns_a_record_on_launch = true
 
   tags = {
