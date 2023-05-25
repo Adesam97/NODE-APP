@@ -1,0 +1,10 @@
+- name: ping all servers
+  hosts: webservers
+
+  tasks:
+    - name: ping dynamic inventory
+      ping:
+
+    - name: echo
+      shell: | 
+        echo "hello"

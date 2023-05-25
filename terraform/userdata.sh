@@ -42,5 +42,5 @@ docker build -t myapp .
 # systemctl restart nginx
 
 # Run Docker container
-docker run -d -p 80:3000 myapp
+docker run -d --restart=always -p 80:3000 myapp
 
