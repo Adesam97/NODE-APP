@@ -41,11 +41,6 @@ resource "aws_internet_gateway" "node_igw" {
   }
 }
 
-resource "aws_internet_gateway_attachment" "node_igw_attachment" {
-  internet_gateway_id = aws_internet_gateway.node_igw.id
-  vpc_id              = aws_vpc.node-app_vpc.id
-}
-
 resource "aws_route_table" "node_rt" {
   vpc_id = aws_vpc.node-app_vpc.id
 
@@ -61,9 +56,14 @@ resource "aws_route" "node_route" {
   depends_on                = [aws_route_table.node_rt]
 }
 
-resource "aws_route_table_association" "node_rt_subnet_association" {
-  subnet_id      = [aws_subnet.node_public_subnet1.id, aws_subnet.node_public_subnet2.id]
-  route_table_id = aws_route_table.devopsrole_rt.id
+resource "aws_route_table_association" "node_rt_subnet1_association" {
+  subnet_id      = aws_subnet.node_public_subnet1.id
+  route_table_id = aws_route_table.node_rt.id
+}
+
+resource "aws_route_table_association" "node_rt_subnet2_association" {
+  subnet_id      = aws_subnet.node_public_subnet2.id
+  route_table_id = aws_route_table.node_rt.id
 }
 
 resource "aws_security_group" "node_inst-temp_sg" {
@@ -132,7 +132,7 @@ resource "aws_autoscaling_group" "node-asg" {
   name                 = "node-asg"
   min_size             = 1
   max_size             = 4
-  desired_capacity     = lookup(var.no-of-instance, var.Environment)
+  desired_capacity     = lookup(var.no-of-instance, var.my-environment)
   vpc_zone_identifier  = [aws_subnet.node_public_subnet1.id, aws_subnet.node_public_subnet2.id]
   health_check_type    = "ELB"
 
@@ -165,7 +165,7 @@ resource "aws_lb_target_group" "node-target" {
 }
 
 
-resource "aws_lb_listener" "terramino" {
+resource "aws_lb_listener" "node-lb-listen" {
   load_balancer_arn = aws_lb.node-lb.arn
   port              = "80"
   protocol          = "HTTP"
@@ -176,7 +176,7 @@ resource "aws_lb_listener" "terramino" {
   }
 }
 
-resource "aws_autoscaling_attachment" "terramino" {
+resource "aws_autoscaling_attachment" "node-asg-attach" {
   autoscaling_group_name = aws_autoscaling_group.node-asg.id
-  alb_target_group_arn   = aws_lb_target_group.node-target.arn
+  lb_target_group_arn   = aws_lb_target_group.node-target.arn
 }

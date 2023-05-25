@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "nginxTerraform"
+    organization = "aws-my-linux"
 
     workspaces {
-      name = "Pipeline_terraform2"
+      tags = [ "local" ]
     }
   }
   required_providers {

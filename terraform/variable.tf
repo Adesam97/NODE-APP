@@ -7,10 +7,10 @@ variable "subnet_cidr_blocks" {
 }
 
 variable "vpc_cidr_block" {
-  default = ["10.10.0.0/16"]
+  default = "10.10.0.0/16"
 }
 
-variable "Environment" {
+variable "my-environment" {
   description = "environment of deployment"
   type = string
   default = ""
