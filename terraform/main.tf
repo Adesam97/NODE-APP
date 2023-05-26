@@ -67,10 +67,17 @@ resource "aws_route_table_association" "node_rt_subnet2_association" {
 }
 
 resource "aws_security_group" "node_inst-temp_sg" {
-  name = "learn-asg-terramino-instance"
+  name = "instance-temp-sg"
   ingress {
     from_port       = 80
     to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.node_lb_sg.id]
+  }
+
+   ingress {
+    from_port       = 22
+    to_port         = 22
     protocol        = "tcp"
     security_groups = [aws_security_group.node_lb_sg.id]
   }
@@ -86,7 +93,7 @@ resource "aws_security_group" "node_inst-temp_sg" {
 }
 
 resource "aws_security_group" "node_lb_sg" {
-  name = "learn-asg-terramino-lb"
+  name = "lb-sg"
   ingress {
     from_port   = 80
     to_port     = 80
@@ -100,6 +107,11 @@ resource "aws_security_group" "node_lb_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
 
   egress {
     from_port   = 0
@@ -115,7 +127,7 @@ resource "aws_launch_template" "node-lt" {
   name            = "node-lt"
   image_id        = data.aws_ami.node-amazon-linux.id
   instance_type   = "t2.micro"
-  user_data       = filebase64("./userdata.sh")
+  user_data       = base64encode(file("./NginxUserdata.sh"))
   vpc_security_group_ids = [aws_security_group.node_inst-temp_sg.id]
   lifecycle {
     create_before_destroy = true
