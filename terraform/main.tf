@@ -119,6 +119,7 @@ resource "aws_security_group" "node_lb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  }
 
   vpc_id = aws_vpc.node-app_vpc.id
 }
