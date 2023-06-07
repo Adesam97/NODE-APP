@@ -1,4 +1,4 @@
-- name: nginxpalbook
+- name: apacheplaybook
   hosts: webservers
   become: true
 
@@ -34,13 +34,16 @@
 
     - name: docker pull & run
       ansible.builtin.shell: |
-        docker rmi adelekegbolahan/nginx-image --force
-        docker pull adelekegbolahan/nginx-image:latest
-        docker rm nginx_container --force
+        docker rmi fikunmisamson/simple-apache --force
+        docker pull fikunmisamson/simple-apache:latest
+        docker rm apache_container --force
       args:
         executable: /bin/bash
       ignore_errors: true
 
     - name: run application container
       ansible.builtin.shell: |
-        docker run -dit --name nginx_container -p 7000:8000 -p 443:443 adelekegbolahan/nginx-image:latest
+        docker run -dit --name apache_container -p 7000:8000 -p 443:443 fikunmisamson/simple-apache:latest
+
+
+

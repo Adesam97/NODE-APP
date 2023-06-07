@@ -68,106 +68,82 @@ resource "aws_route_table_association" "node_rt_subnet2_association" {
 
 resource "aws_security_group" "node_inst-temp_sg" {
   name = "instance-temp-sg"
+  description = "allow all from everywhere"
   ingress {
+    description = "http from lb"
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.node_lb_sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.node_lb_sg.id]
   }
 
    ingress {
+    description = "ssh from lb"
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.node_lb_sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+   ingress {
+    description = "https from lb"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.node_lb_sg.id]
   }
 
   egress {
+    description = "all out"
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
-    security_groups = [aws_security_group.node_lb_sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.node_lb_sg.id]
   }
 
   vpc_id = aws_vpc.node-app_vpc.id
 }
 
 resource "aws_security_group" "node_lb_sg" {
-  name = "lb-sg"
+  name = "node_lb_sg"
+  description = "allow http from everywhere"
   ingress {
+    description = "http from everywhere"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-   ingress {
-    description = "https from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
 
   egress {
+    description = "all out"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  }
 
   vpc_id = aws_vpc.node-app_vpc.id
 }
 
-resource "aws_launch_template" "node-lt" {
-  name            = "node-lt"
-  image_id        = data.aws_ami.node-amazon-linux.id
+resource "aws_launch_template" "node-launch-template" {
+  name          = "node-aws-asg"
+  image_id        = "ami-0715c1897453cabd1"
   instance_type   = "t2.micro"
-  user_data       = base64encode(file("./NginxUserdata.sh"))
-  vpc_security_group_ids = [aws_security_group.node_inst-temp_sg.id]
-  lifecycle {
-    create_before_destroy = true
+
+  vpc_security_group_ids = [ aws_security_group.node_inst-temp_sg.id ] 
+
+  tags = {
+    Name = "node-app"
   }
+
   monitoring {
     enabled = true
   }
-  tags = {
-      Name = "node-app"
-    }
-}
 
-resource "aws_autoscaling_group" "node-asg" {
-  name                 = "node-asg"
-  min_size             = 1
-  max_size             = 4
-  desired_capacity     = lookup(var.no-of-instance, var.my-environment)
-  vpc_zone_identifier  = [aws_subnet.node_public_subnet1.id, aws_subnet.node_public_subnet2.id]
-  health_check_type    = "ELB"
-
-  launch_template {
-    id      = aws_launch_template.node-lt.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "node-app-asg"
-    propagate_at_launch = true
-  }
-
-}
-
-resource "aws_lb" "node-lb" {
-  name               = "node-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.node_lb_sg.id]
-  subnets            = [aws_subnet.node_public_subnet1.id, aws_subnet.node_public_subnet2.id]
+  user_data       = base64encode(file("./userdata.sh"))
 }
 
 resource "aws_lb_target_group" "node-target" {
@@ -177,6 +153,43 @@ resource "aws_lb_target_group" "node-target" {
   vpc_id   = aws_vpc.node-app_vpc.id
 }
 
+resource "aws_autoscaling_group" "node-asg" {
+  name                 = "node-asg"
+  min_size             = 1
+  max_size             = 3
+  desired_capacity     = lookup(var.no-of-instance, var.my-environment)
+  vpc_zone_identifier  = [aws_subnet.node_public_subnet1.id , aws_subnet.node_public_subnet2.id]
+  health_check_type    = "ELB"
+  health_check_grace_period = 400
+
+  launch_template {
+    id      = aws_launch_template.node-launch-template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "node-app-asg"
+    propagate_at_launch = true
+  }
+
+  target_group_arns = [ aws_lb_target_group.node-target.arn ]
+
+}
+
+# resource "aws_lb_target_group_attachment" "node-asg" {
+#   target_group_arn = aws_lb_target_group.node-target.arn
+#   target_id        = aws_autoscaling_group.node-asg.id
+#   port             = 80
+# }
+
+resource "aws_lb" "node-lb" {
+  name               = "node-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.node_lb_sg.id]
+  subnets            = [aws_subnet.node_public_subnet1.id , aws_subnet.node_public_subnet2.id]
+}
 
 resource "aws_lb_listener" "node-lb-listen" {
   load_balancer_arn = aws_lb.node-lb.arn
@@ -190,6 +203,6 @@ resource "aws_lb_listener" "node-lb-listen" {
 }
 
 resource "aws_autoscaling_attachment" "node-asg-attach" {
-  autoscaling_group_name = aws_autoscaling_group.node-asg.id
+  autoscaling_group_name = aws_autoscaling_group.node-asg.name
   lb_target_group_arn   = aws_lb_target_group.node-target.arn
 }

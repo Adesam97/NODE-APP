@@ -2,7 +2,7 @@ data "aws_availability_zones" "node" {
   state = "available"
 }
 
-data "aws_ami" "node-amazon-linux" {
+data "aws_ami" "amazon-linux" {
   most_recent = true
   owners      = ["amazon"]
 
