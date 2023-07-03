@@ -16,13 +16,13 @@ variable "my-environment" {
   default = ""
 }
 
-variable "no-of-instance" {
-    description = "value to be deploy"
-    type = map
-    default = {
-        local-test   = "1"
-        development  = "1"
-        testing      = "2"
-        production   = "3"
-    }
-}
+# variable "no-of-instance" {
+#     description = "value to be deploy"
+#     type = map
+#     default = {
+#         local-test   = "1"
+#         development  = "1"
+#         testing      = "1"
+#         production   = "3"
+#     }
+# }

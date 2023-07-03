@@ -1,4 +1,5 @@
-- name: apacheplaybook
+---
+- name: node-playbook
   hosts: webservers
   become: true
 
@@ -34,16 +35,16 @@
 
     - name: docker pull & run
       ansible.builtin.shell: |
-        docker rmi fikunmisamson/simple-apache --force
-        docker pull fikunmisamson/simple-apache:latest
-        docker rm apache_container --force
+        docker rmi fikunmisamson/node-img --force
+        docker pull fikunmisamson/node-app:latest
+        docker rm node-web --force
       args:
         executable: /bin/bash
       ignore_errors: true
 
     - name: run application container
       ansible.builtin.shell: |
-        docker run -dit --name apache_container -p 7000:8000 -p 443:443 fikunmisamson/simple-apache:latest
+        docker run -dit --name node-web -p 80:3000 -p 443:443 fikunmisamson/node-app:latest
 
 
 

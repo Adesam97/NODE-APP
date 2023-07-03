@@ -69,14 +69,14 @@ resource "aws_route_table_association" "node_rt_subnet2_association" {
 resource "aws_security_group" "node_inst-temp_sg" {
   name = "instance-temp-sg"
   description = "allow all from everywhere"
-  ingress {
-    description = "http from lb"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    #security_groups = [aws_security_group.node_lb_sg.id]
-  }
+  # ingress {
+  #   description = "http from lb"
+  #   from_port       = 80
+  #   to_port         = 80
+  #   protocol        = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  #   #security_groups = [aws_security_group.node_lb_sg.id]
+  # }
 
    ingress {
     description = "ssh from lb"
@@ -104,6 +104,16 @@ resource "aws_security_group" "node_inst-temp_sg" {
   }
 
   vpc_id = aws_vpc.node-app_vpc.id
+}
+
+resource "aws_security_group_rule" "attach-node-lb" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  #cidr_blocks       = [aws_vpc.node-app_vpc.cidr_block]
+  source_security_group_id = aws_security_group.node_lb_sg.id
+  security_group_id = aws_security_group.node_inst-temp_sg.id
 }
 
 resource "aws_security_group" "node_lb_sg" {
@@ -157,7 +167,8 @@ resource "aws_autoscaling_group" "node-asg" {
   name                 = "node-asg"
   min_size             = 1
   max_size             = 3
-  desired_capacity     = lookup(var.no-of-instance, var.my-environment)
+  desired_capacity     = 2
+  #desired_capacity    = lookup(var.no-of-instance, var.my-environment)
   vpc_zone_identifier  = [aws_subnet.node_public_subnet1.id , aws_subnet.node_public_subnet2.id]
   health_check_type    = "ELB"
   health_check_grace_period = 400

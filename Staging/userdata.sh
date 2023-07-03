@@ -4,7 +4,7 @@
 yum update
 
 # Install Nginx, Docker and Git
-yum install -y git docker 
+yum install -y docker #git
 
 # Start the Docker service
 service docker start
@@ -13,12 +13,13 @@ service docker start
 usermod -a -G docker ec2-user
 
 # Clone Git repository
-git clone https://github.com/Adesam97/NODE-APP.git /tmp/myapp
+#git clone https://github.com/Adesam97/NODE-APP.git /tmp/myapp
 
 # Build Docker image
-cd /tmp/myapp/docker-node-app
-docker build -t myapp .
+docker rmi fikunmisamson/node-app --force
+docker pull fikunmisamson/node-app:latest
+docker rm node-web --force
 
 # Run Docker container
-docker run -d --restart=always -p 80:3000 myapp
+docker run -dit --name node-web --restart=always -p 80:3000 -p 443:443 fikunmisamson/node-app:latest
 
