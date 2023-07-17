@@ -68,3 +68,64 @@ pipeline {
         }
     }
 }
+
+pipeline {
+    agent any
+    stages {
+        stage("clone") {
+            steps {
+                git branch: 'main', credentialsId: '68e5f0a8-c14c-417e-8596-1844c6c98cf5', url: 'https://github.com/Adesam97/NODE-APP.git'
+            }
+        }
+        
+        stage("sonarcloud scanning") {
+            environment {
+                SONAR_SCANNER_VERSION = '4.7.0.2747'
+                SONAR_SCANNER_HOME = "$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux"
+                SONAR_TOKEN = "45ed842fba17abb771d1dbe51f38a26b2d8b39ea"
+            }
+            steps {
+                script {
+                    sh '''
+                    curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
+                    unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+                    '''
+                    sh '''
+                    cd ./docker-node-app/
+                    pwd
+                    $HOME/.sonar/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner \
+                  -Dsonar.organization=node-sonarcloud \
+                  -Dsonar.projectKey=node-sonarcloud_first-node-check \
+                  -Dsonar.sources=. \
+                  -Dsonar.host.url=https://sonarcloud.io
+                    '''
+                }
+            }
+        }
+    }
+}
+
+
+sh 'sudo $HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux'
+                sh '''sonar-scanner \\
+                -Dsonar.organization=node-sonarcloud \\
+                -Dsonar.projectKey=git-sonarcloud \\
+                -Dsonar.sources=. \\
+                -Dsonar.host.url=https://sonarcloud.io'''
+
+        
+        stage("scanning") {
+            environment {
+                SONAR_SCANNER_VERSION = '4.7.0.2747'
+                SONAR_SCANNER_HOME = "$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux"
+                SONAR_TOKEN = "7a5584c09f2a039f9ddd0da980e393e70cb8a15a"
+            }
+            steps {
+                sh '''cd docker-node-app
+                ls'''
+                sh 'echo $PATH'
+                sh ' ./$HOME/.sonar/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner'
+                
+            }
+        }
+
