@@ -82,7 +82,7 @@ pipeline {
             environment {
                 SONAR_SCANNER_VERSION = '4.7.0.2747'
                 SONAR_SCANNER_HOME = "$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux"
-                SONAR_TOKEN = "45ed842fba17abb771d1dbe51f38a26b2d8b39ea"
+                SONAR_TOKEN = credentials('10afd607-357a-4948-acef-e78497e83e40')
             }
             steps {
                 script {
@@ -95,7 +95,7 @@ pipeline {
                     pwd
                     $HOME/.sonar/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner \
                   -Dsonar.organization=node-sonarcloud \
-                  -Dsonar.projectKey=node-sonarcloud_first-node-check \
+                  -Dsonar.projectKey=node-sonarcloud_jenkins-node \
                   -Dsonar.sources=. \
                   -Dsonar.host.url=https://sonarcloud.io
                     '''
@@ -104,28 +104,4 @@ pipeline {
         }
     }
 }
-
-
-sh 'sudo $HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux'
-                sh '''sonar-scanner \\
-                -Dsonar.organization=node-sonarcloud \\
-                -Dsonar.projectKey=git-sonarcloud \\
-                -Dsonar.sources=. \\
-                -Dsonar.host.url=https://sonarcloud.io'''
-
-        
-        stage("scanning") {
-            environment {
-                SONAR_SCANNER_VERSION = '4.7.0.2747'
-                SONAR_SCANNER_HOME = "$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux"
-                SONAR_TOKEN = "7a5584c09f2a039f9ddd0da980e393e70cb8a15a"
-            }
-            steps {
-                sh '''cd docker-node-app
-                ls'''
-                sh 'echo $PATH'
-                sh ' ./$HOME/.sonar/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner'
-                
-            }
-        }
 
