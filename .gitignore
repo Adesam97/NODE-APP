@@ -1,7 +1,8 @@
 # Local .terraform directories
-Dev/terraform/.terraform/**
-Prod/.terraform/**
-Staging/.terraform/**
+Dev/**
+Prod/**
+Staging/**
+Jenkinsfile
 
 # .tfstate files
 *.tfstate
